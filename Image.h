@@ -6,24 +6,25 @@
 #define IMAGE_IMAGE_H
 
 #include <iostream>
+#include <cassert>
 #include "ByteReader.h"
 
 #define GL_SILENCE_DEPRECATION
 
 #include "GLUT/glut.h"
 
-struct RGB {
+struct RGBdata {
     uint8_t R, G, B;
 
-    RGB() = default;
+    RGBdata() = default;
 
-    RGB(uint8_t r, uint8_t g, uint8_t b) {
+    RGBdata(uint8_t r, uint8_t g, uint8_t b) {
         R = r;
         G = g;
         B = b;
     }
 
-    friend std::ostream &operator<<(std::ostream &output, const RGB &p) {
+    friend std::ostream &operator<<(std::ostream &output, const RGBdata &p) {
         output << "R=" << (int) p.R << ", G=" << (int) p.G << ", B=" << (int) p.B;
         return output;
     }
@@ -31,7 +32,7 @@ struct RGB {
 
 class Image {
 private:
-    RGB **data;
+    RGBdata **data;
 public:
     int height;
     int width;
@@ -39,7 +40,7 @@ public:
 
     explicit Image(const std::string &path);
 
-    RGB getPixel(int row, int col);
+    RGBdata getPixel(int row, int col);
 
     void show();
 };

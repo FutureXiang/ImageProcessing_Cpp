@@ -4,7 +4,7 @@
 
 #include "Image.h"
 
-RGB Image::getPixel(int row, int col) {
+RGBdata Image::getPixel(int row, int col) {
     assert(row >= 0 && row < height);
     assert(col >= 0 && col < width);
     return data[row][col];
@@ -18,19 +18,19 @@ Image::Image(const std::string &path) {
     width = reader->getIntLittleEndian(18);
     height = reader->getIntLittleEndian(22);
 
-    data = new RGB *[height];
+    data = new RGBdata *[height];
     bgr1DAarray = new uint8_t[width * height * 3];
 
     unsigned int pos = offset, pos_bgr1d = 0;
     unsigned int rowBytesCount = (24 * width + 31) / 32 * 4;
 
     for (int i = height - 1; i >= 0; --i) {
-        data[i] = new RGB[width];
+        data[i] = new RGBdata[width];
         for (int j = 0; j < width; ++j) {
-            char b = reader->getByte(pos++);
-            char g = reader->getByte(pos++);
-            char r = reader->getByte(pos++);
-            data[i][j] = RGB(r, g, b);
+            uint8_t b = reader->getByte(pos++);
+            uint8_t g = reader->getByte(pos++);
+            uint8_t r = reader->getByte(pos++);
+            data[i][j] = RGBdata(r, g, b);
             bgr1DAarray[pos_bgr1d++] = b;
             bgr1DAarray[pos_bgr1d++] = g;
             bgr1DAarray[pos_bgr1d++] = r;
