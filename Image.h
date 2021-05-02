@@ -12,6 +12,10 @@
 #define GL_SILENCE_DEPRECATION
 
 #include "GLUT/glut.h"
+#include "GLUT/freeglut.h"
+
+extern int argc_main;
+extern char **argv_main;
 
 struct RGBdata {
     uint8_t R, G, B;
@@ -33,6 +37,11 @@ struct RGBdata {
 class Image {
 private:
     RGBdata **data;
+
+    RGBdata getPixel(int row, int col);
+
+    void genBGR();
+
 public:
     int height;
     int width;
@@ -40,9 +49,17 @@ public:
 
     explicit Image(const std::string &path);
 
-    RGBdata getPixel(int row, int col);
+    explicit Image(const Image *another);
+
+    virtual ~Image();
 
     void show();
+
+    void translation(int dx, int dy);
+
+    void rotation(double theta);
+
+    void scale(double cx, double cy);
 };
 
 #endif //IMAGE_IMAGE_H
