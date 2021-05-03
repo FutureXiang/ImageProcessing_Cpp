@@ -4,10 +4,49 @@
 
 #include "Image.h"
 
+#define PI (3.14159265)
+
+double linearInterpolation(double A, double B, double ratio_Ax_AB) {
+    return A + ratio_Ax_AB * (B - A);
+}
+
 RGBdata Image::getPixel(int row, int col) {
     if (row >= 0 && row < height && col >= 0 && col < width)
         return data[row][col];
     else
+        return {0, 0, 0};
+}
+
+RGBdata Image::getPixelFloat(double row, double col) {
+    // BiLinear Interpolation
+    if (row >= 0 && row <= height - 1 && col >= 0 && col <= width - 1) {
+        int r0 = int(floor(row)), r1 = int(ceil(row));
+        int c0 = int(floor(col)), c1 = int(ceil(col));
+        if (r0 == r1 && c0 == c1)
+            return data[r0][c0];
+        if (r0 == r1 && c0 != c1) {
+            double R = linearInterpolation(data[r0][c0].R, data[r0][c1].R, (col - c0) / (c1 - c0));
+            double G = linearInterpolation(data[r0][c0].G, data[r0][c1].G, (col - c0) / (c1 - c0));
+            double B = linearInterpolation(data[r0][c0].B, data[r0][c1].B, (col - c0) / (c1 - c0));
+            return {static_cast<uint8_t>(lround(R)), static_cast<uint8_t>(lround(G)), static_cast<uint8_t>(lround(B))};
+        }
+        if (r0 != r1 && c0 == c1) {
+            double R = linearInterpolation(data[r0][c0].R, data[r1][c0].R, (row - r0) / (r1 - r0));
+            double G = linearInterpolation(data[r0][c0].G, data[r1][c0].G, (row - r0) / (r1 - r0));
+            double B = linearInterpolation(data[r0][c0].B, data[r1][c0].B, (row - r0) / (r1 - r0));
+            return {static_cast<uint8_t>(lround(R)), static_cast<uint8_t>(lround(G)), static_cast<uint8_t>(lround(B))};
+        }
+        double pR = linearInterpolation(data[r0][c0].R, data[r0][c1].R, (col - c0) / (c1 - c0));
+        double pG = linearInterpolation(data[r0][c0].G, data[r0][c1].G, (col - c0) / (c1 - c0));
+        double pB = linearInterpolation(data[r0][c0].B, data[r0][c1].B, (col - c0) / (c1 - c0));
+        double qR = linearInterpolation(data[r1][c0].R, data[r1][c1].R, (col - c0) / (c1 - c0));
+        double qG = linearInterpolation(data[r1][c0].G, data[r1][c1].G, (col - c0) / (c1 - c0));
+        double qB = linearInterpolation(data[r1][c0].B, data[r1][c1].B, (col - c0) / (c1 - c0));
+        double R = linearInterpolation(pR, qR, (row - r0) / (r1 - r0));
+        double G = linearInterpolation(pG, qG, (row - r0) / (r1 - r0));
+        double B = linearInterpolation(pB, qB, (row - r0) / (r1 - r0));
+        return {static_cast<uint8_t>(lround(R)), static_cast<uint8_t>(lround(G)), static_cast<uint8_t>(lround(B))};
+    } else
         return {0, 0, 0};
 }
 
@@ -111,11 +150,52 @@ void Image::translation(int dx, int dy) {
 }
 
 void Image::rotation(double theta) {
+    theta = -theta;
+    auto new_data = new RGBdata *[height];
+    for (int i = 0; i < height; ++i) {
+        new_data[i] = new RGBdata[width];
+        for (int j = 0; j < width; ++j) {
+            double x = j - width * 0.5;
+            double y = height * 0.5 - i;
+            double cosTheta = cos(theta * PI / 180.0);
+            double sinTheta = sin(theta * PI / 180.0);
+            double x_ = cosTheta * x - sinTheta * y;
+            double y_ = sinTheta * x + cosTheta * y;
+            new_data[i][j] = getPixelFloat(height * 0.5 - y_, x_ + width * 0.5);
+        }
+    }
 
+    for (int i = 0; i < height; ++i) {
+        delete[] data[i];
+    }
+    delete[] data;
+    data = new_data;
+
+    genBGR();
 }
 
 void Image::scale(double cx, double cy) {
+    int height_new = height * cy;
+    int width_new = width * cx;
+    auto new_data = new RGBdata *[height_new];
+    for (int i = 0; i < height_new; ++i) {
+        new_data[i] = new RGBdata[width_new];
+        for (int j = 0; j < width_new; ++j) {
+            new_data[i][j] = getPixelFloat(i / cy, j / cx);
+        }
+    }
+    height = height_new;
+    width = width_new;
 
+    for (int i = 0; i < height; ++i) {
+        delete[] data[i];
+    }
+    delete[] data;
+    data = new_data;
+
+    delete[] bgr1DAarray;
+    bgr1DAarray = new uint8_t[width * height * 3];
+    genBGR();
 }
 
 void Image::genBGR() {

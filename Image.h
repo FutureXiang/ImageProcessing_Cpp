@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <cmath>
 #include "ByteReader.h"
 
 #define GL_SILENCE_DEPRECATION
@@ -16,6 +17,8 @@
 
 extern int argc_main;
 extern char **argv_main;
+
+double linearInterpolation(double A, double B, double ratio_Ax_AB);
 
 struct RGBdata {
     uint8_t R, G, B;
@@ -39,6 +42,8 @@ private:
     RGBdata **data;
 
     RGBdata getPixel(int row, int col);
+
+    RGBdata getPixelFloat(double row, double col);
 
     void genBGR();
 
