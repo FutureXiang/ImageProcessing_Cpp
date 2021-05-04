@@ -208,3 +208,7 @@ void Image::genBGR() {
         }
     }
 }
+
+void Image::equalizeHist() {
+    genBGR();
+}
