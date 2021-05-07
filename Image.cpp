@@ -210,5 +210,31 @@ void Image::genBGR() {
 }
 
 void Image::equalizeHist() {
+    auto hsl = new HSLdata *[height];
+    int cnt[101] = {0};
+    double sum[101] = {0.0};
+
+    for (int i = 0; i < height; ++i) {
+        hsl[i] = new HSLdata[width];
+        for (int j = 0; j < width; ++j) {
+            hsl[i][j] = HSLdata(data[i][j]);
+            cnt[int(round(hsl[i][j].L * 100))]++;
+        }
+    }
+    for (int i = 0; i < 101; ++i) {
+        double prev = (i == 0) ? 0 : sum[i - 1];
+        sum[i] = prev + cnt[i] * 1.0 / height / width;
+    }
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            hsl[i][j].L = sum[int(round(hsl[i][j].L * 100))];
+            data[i][j] = RGBdata(hsl[i][j]);
+        }
+    }
+
+    for (int i = 0; i < height; ++i) {
+        delete[] hsl[i];
+    }
+    delete[] hsl;
     genBGR();
 }

@@ -5,8 +5,11 @@ int main(int argc, char **argv) {
     argv_main = argv;
 
     auto *img = new Image("test.bmp");
-    img->show();
     auto *new_img = new Image(img);
+    img->show();
+    img->equalizeHist();
+    img->show();
+
     new_img->translation(20, -20);
     new_img->show();
     new_img->rotation(45);

@@ -40,6 +40,7 @@ HSLdata::HSLdata(RGBdata rgb) {
         H = 60 * (4 + (r - g) / c);
     else
         assert(false);
+    if (less(H, 0)) H += 360;
 }
 
 RGBdata::RGBdata(HSLdata hsl) {
