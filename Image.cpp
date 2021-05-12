@@ -4,7 +4,6 @@
 
 #include "Image.h"
 
-#define PI (3.14159265)
 
 double linearInterpolation(double A, double B, double ratio_Ax_AB) {
     return A + ratio_Ax_AB * (B - A);
@@ -118,14 +117,15 @@ void keyboard(unsigned char key, int x, int y) {
         glutDestroyWindow(currentWindow);
 }
 
-void Image::show() {
+void Image::show(const char* title) {
     currentImage = this;
     glutInit(&argc_main, argv_main);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE,
                   GLUT_ACTION_GLUTMAINLOOP_RETURNS);
     glutInitWindowSize(width, height);
-    currentWindow = glutCreateWindow("OpenGL Show Image");
+    if (title == nullptr) title = "";
+    currentWindow = glutCreateWindow(title);
     glutKeyboardFunc(keyboard);
     glutDisplayFunc(display);
     glutMainLoop();
@@ -236,5 +236,25 @@ void Image::equalizeHist() {
         delete[] hsl[i];
     }
     delete[] hsl;
+    genBGR();
+}
+
+void Image::showFourier() {
+    auto gray = Matrix<uint8_t>(height, width);
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            gray.data[i][j] = data[i][j].gray();
+        }
+    }
+    auto fft = FFT(gray);
+    unsigned int pos_bgr1d = 0;
+    for (int i = height - 1; i >= 0; --i) {
+        for (int j = 0; j < width; ++j) {
+            bgr1DAarray[pos_bgr1d++] = fft->data[i][j];
+            bgr1DAarray[pos_bgr1d++] = fft->data[i][j];
+            bgr1DAarray[pos_bgr1d++] = fft->data[i][j];
+        }
+    }
+    show("Fourier");
     genBGR();
 }

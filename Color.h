@@ -29,6 +29,10 @@ struct RGBdata {
 
     explicit RGBdata(HSLdata hsl);
 
+    uint8_t gray() const {
+        return uint8_t(lround(((int)R + int(G) + int(B)) / 3.0));
+    }
+
     friend std::ostream &operator<<(std::ostream &output, const RGBdata &p) {
         output << "R=" << (int) p.R << ", G=" << (int) p.G << ", B=" << (int) p.B;
         return output;

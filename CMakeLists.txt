@@ -8,7 +8,7 @@ if (WIN32)
     link_directories(lib/x64)
 endif()
 
-add_executable(Image main.cpp ByteReader.cpp Image.cpp Color.cpp)
+add_executable(Image main.cpp ByteReader.cpp Image.cpp Color.cpp Mathematics.cpp)
 
 if (APPLE)
     target_link_libraries(Image "-framework OpenGL")

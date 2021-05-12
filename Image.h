@@ -7,6 +7,7 @@
 
 #include "Color.h"
 #include "ByteReader.h"
+#include "Mathematics.h"
 
 #define GL_SILENCE_DEPRECATION
 
@@ -39,7 +40,7 @@ public:
 
     virtual ~Image();
 
-    void show();
+    void show(const char *title);
 
     void translation(int dx, int dy);
 
@@ -48,6 +49,8 @@ public:
     void scale(double cx, double cy);
 
     void equalizeHist();
+
+    void showFourier();
 };
 
 #endif //IMAGE_IMAGE_H
