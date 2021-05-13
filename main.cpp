@@ -17,5 +17,19 @@ int main(int argc, char **argv) {
     new_img->show("Rotation: counterclockwise 45deg");
     new_img->scale(2, 0.5);
     new_img->show("Rescale: hori by 2, vert by 1/2");
+
+    auto *bin = new Image("test_fft.bmp");
+    auto *bin_1 = new Image(bin);
+    bin_1->translation(-40, -40);
+    auto *bin_2 = new Image("test_fft_big.bmp");
+    auto *bin_3 = new Image("test_fft_small.bmp");
+    bin->show("original");
+    bin->showFourier();
+    bin_1->show("translation");
+    bin_1->showFourier();
+    bin_2->show("zoom in");
+    bin_2->showFourier();
+    bin_3->show("zoom out");
+    bin_3->showFourier();
     return 0;
 }
