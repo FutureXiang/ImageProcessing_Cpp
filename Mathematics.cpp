@@ -23,14 +23,9 @@ int bitReversal(int num, int len) {
     return res;
 }
 
-Matrix<uint8_t> *FFT(const Matrix<uint8_t> &mat) {
-    /*
-     * Input:   gray image, range [0, 255]
-     * Output:  gray image, range [0, 255]
-     */
+Matrix<Complex> FFT(const Matrix<Complex> &mat) {
     int H = mat.height, W = mat.width;
     auto result = Matrix<Complex>(H, W);
-    auto ret = new Matrix<uint8_t>(H, W);
 
     int numH = binaryPower(H), numW = binaryPower(W);
     assert (numH != -1 && numW != -1);
@@ -47,7 +42,7 @@ Matrix<uint8_t> *FFT(const Matrix<uint8_t> &mat) {
     }
     for (int i = 0; i < H; ++i) {
         for (int j = 0; j < W; ++j) {
-            result.data[i][j] = {mat.data[indexRev_height[i]][indexRev_width[j]] / 255.0, 0};
+            result.data[i][j] = mat.data[indexRev_height[i]][indexRev_width[j]];
         }
     }
     delete[] indexRev_height;
@@ -112,65 +107,25 @@ Matrix<uint8_t> *FFT(const Matrix<uint8_t> &mat) {
         }
     }
 
-    // Log scale & Normalize range
-    double val_max = std::numeric_limits<double>::min(), val_min = std::numeric_limits<double>::max();
-    for (int i = 0; i < H; ++i) {
-        for (int j = 0; j < W; ++j) {
-            double val = result.data[i][j].mod();
-            val = log(val + 1);
-            result.data[i][j] = {val, 0};
-            val_max = std::max(val_max, val);
-            val_min = std::min(val_min, val);
-        }
-    }
-    for (int i = 0; i < H; ++i) {
-        for (int j = 0; j < W; ++j) {
-            double val = result.data[i][j].real;
-            ret->data[i][j] = uint8_t((val - val_min) / (val_max - val_min) * 255);
-        }
-    }
-
-    // Shifting the zero-frequency component to the center
-    for (int i = 0; i < H / 2; ++i) {
-        for (int j = 0; j < W / 2; ++j) {
-            std::swap(ret->data[i][j], ret->data[i + H / 2][j + W / 2]);
-            std::swap(ret->data[i + H / 2][j], ret->data[i][j + W / 2]);
-        }
-    }
-
     delete[] W_height;
     delete[] W_width;
-    return ret;
+    return result;
 }
 
-template<typename T>
-Matrix<T>::Matrix(const Matrix &other) {
-    height = other.height;
-    width = other.width;
-    data = new T *[height];
-    for (int i = 0; i < height; ++i) {
-        data[i] = new T[width];
-        for (int j = 0; j < width; ++j) {
-            data[i][j] = other.data[i][j];
+Matrix<Complex> IFFT(const Matrix<Complex> &mat) {
+    int H = mat.height, W = mat.width;
+
+    for (int i = 0; i < H; ++i) {
+        for (int j = 0; j < W; ++j) {
+            mat.data[i][j].imag = -mat.data[i][j].imag;
         }
     }
-}
-
-template<typename T>
-Matrix<T>::Matrix(int h, int w) {
-    height = h;
-    width = w;
-    data = new T *[h];
-    for (int i = 0; i < h; ++i) {
-        data[i] = new T[w];
+    auto result = FFT(mat);
+    for (int i = 0; i < H; ++i) {
+        for (int j = 0; j < W; ++j) {
+            result.data[i][j].real = result.data[i][j].real / (H * W);
+            result.data[i][j].imag = -result.data[i][j].imag / (H * W);
+        }
     }
+    return result;
 }
-
-template<typename T>
-Matrix<T>::~Matrix() {
-    for (int i = 0; i < height; ++i) {
-        delete[] data[i];
-    }
-    delete[] data;
-}
-

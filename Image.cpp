@@ -240,21 +240,59 @@ void Image::equalizeHist() {
 }
 
 void Image::showFourier() {
-    auto gray = Matrix<uint8_t>(height, width);
+    auto norm = Matrix<Complex>(height, width);
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
-            gray.data[i][j] = data[i][j].gray();
+            norm.data[i][j] = {data[i][j].gray() / 255.0, 0};
         }
     }
-    auto fft = FFT(gray);
+    auto fft = FFT(norm);
+    auto temp = Matrix<double>(height, width);
+    auto visual = Matrix<uint8_t>(height, width);
+
+    // Visualize: Log scale & Normalize range
+    double val_max = std::numeric_limits<double>::min(), val_min = std::numeric_limits<double>::max();
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            double val = fft.data[i][j].mod();
+            val = log(val + 1);
+            temp.data[i][j] = val;
+            val_max = std::max(val_max, val);
+            val_min = std::min(val_min, val);
+        }
+    }
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            visual.data[i][j] = uint8_t((temp.data[i][j] - val_min) / (val_max - val_min) * 255);
+        }
+    }
+    // Visualize: Shifting the zero-frequency component to the center
+    for (int i = 0; i < height / 2; ++i) {
+        for (int j = 0; j < width / 2; ++j) {
+            std::swap(visual.data[i][j], visual.data[i + height / 2][j + width / 2]);
+            std::swap(visual.data[i + height / 2][j], visual.data[i][j + width / 2]);
+        }
+    }
+
     unsigned int pos_bgr1d = 0;
     for (int i = height - 1; i >= 0; --i) {
         for (int j = 0; j < width; ++j) {
-            bgr1DAarray[pos_bgr1d++] = fft->data[i][j];
-            bgr1DAarray[pos_bgr1d++] = fft->data[i][j];
-            bgr1DAarray[pos_bgr1d++] = fft->data[i][j];
+            bgr1DAarray[pos_bgr1d++] = visual.data[i][j];
+            bgr1DAarray[pos_bgr1d++] = visual.data[i][j];
+            bgr1DAarray[pos_bgr1d++] = visual.data[i][j];
         }
     }
     show("Fourier");
+
+    auto ifft = IFFT(fft);
+    pos_bgr1d = 0;
+    for (int i = height - 1; i >= 0; --i) {
+        for (int j = 0; j < width; ++j) {
+            bgr1DAarray[pos_bgr1d++] = uint8_t(ifft.data[i][j].real * 255);
+            bgr1DAarray[pos_bgr1d++] = uint8_t(ifft.data[i][j].real * 255);
+            bgr1DAarray[pos_bgr1d++] = uint8_t(ifft.data[i][j].real * 255);
+        }
+    }
+    show("Inverse Fourier");
     genBGR();
 }

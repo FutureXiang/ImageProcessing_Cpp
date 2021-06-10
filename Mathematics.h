@@ -52,7 +52,40 @@ int binaryPower(int num);
 
 int bitReversal(int num, int len);
 
-Matrix<uint8_t> *FFT(const Matrix<uint8_t> &mat);
+Matrix<Complex> FFT(const Matrix<Complex> &mat);
+
+Matrix<Complex> IFFT(const Matrix<Complex> &mat);
+
+template<typename T>
+Matrix<T>::Matrix(const Matrix &other) {
+    height = other.height;
+    width = other.width;
+    data = new T *[height];
+    for (int i = 0; i < height; ++i) {
+        data[i] = new T[width];
+        for (int j = 0; j < width; ++j) {
+            data[i][j] = other.data[i][j];
+        }
+    }
+}
+
+template<typename T>
+Matrix<T>::Matrix(int h, int w) {
+    height = h;
+    width = w;
+    data = new T *[h];
+    for (int i = 0; i < h; ++i) {
+        data[i] = new T[w];
+    }
+}
+
+template<typename T>
+Matrix<T>::~Matrix() {
+    for (int i = 0; i < height; ++i) {
+        delete[] data[i];
+    }
+    delete[] data;
+}
 
 
 #endif //IMAGE_MATHEMATICS_H
