@@ -1,4 +1,5 @@
 #include "Image.h"
+#include "Descriptor.h"
 
 int main(int argc, char **argv) {
     argc_main = argc;
@@ -31,5 +32,12 @@ int main(int argc, char **argv) {
     bin_2->showFourier();
     bin_3->show("zoom out");
     bin_3->showFourier();
+
+    auto edge = getEdgePoints();
+    plotPoints(edge, "N = 64");
+    auto descriptor = getFourierDescriptors(edge);
+    plotPoints(getIFourierRecon(descriptor, 2), "M = 2");
+    plotPoints(getIFourierRecon(descriptor, 32), "M = 32");
+    plotPoints(getIFourierRecon(descriptor, 62), "M = 62");
     return 0;
 }

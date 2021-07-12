@@ -93,6 +93,20 @@ Image::Image(const Image *another) {
     genBGR();
 }
 
+Image::Image(int h, int w) {
+    height = h;
+    width = w;
+    data = new RGBdata *[height];
+    for (int i = 0; i < height; ++i) {
+        data[i] = new RGBdata[width];
+        for (int j = 0; j < width; ++j) {
+            data[i][j] = {0, 0, 0};
+        }
+    }
+    bgr1DAarray = new uint8_t[width * height * 3];
+    genBGR();
+}
+
 Image::~Image() {
     for (int i = 0; i < height; ++i) {
         delete[] data[i];
@@ -117,7 +131,7 @@ void keyboard(unsigned char key, int x, int y) {
         glutDestroyWindow(currentWindow);
 }
 
-void Image::show(const char* title) {
+void Image::show(const char *title) {
     currentImage = this;
     glutInit(&argc_main, argv_main);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);

@@ -32,6 +32,10 @@ struct Complex {
     Complex operator*(const Complex &other) const {
         return {real * other.real - imag * other.imag, real * other.imag + imag * other.real};
     }
+
+    Complex operator/(const double &other) const {
+        return {real / other, imag / other};
+    }
 };
 
 template<typename T>

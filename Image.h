@@ -21,24 +21,25 @@ double linearInterpolation(double A, double B, double ratio_Ax_AB);
 
 class Image {
 private:
-    RGBdata **data;
-
     RGBdata getPixel(int row, int col);
 
     RGBdata getPixelFloat(double row, double col);
 
-    void genBGR();
-
 public:
     int height;
     int width;
+    RGBdata **data;
     uint8_t *bgr1DAarray;
+
+    explicit Image(int h, int w);
 
     explicit Image(const std::string &path);
 
     explicit Image(const Image *another);
 
     virtual ~Image();
+
+    void genBGR();
 
     void show(const char *title);
 
