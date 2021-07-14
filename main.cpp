@@ -5,6 +5,9 @@ int main(int argc, char **argv) {
     argc_main = argc;
     argv_main = argv;
 
+    auto *tiff = new Image("test.tiff");
+    tiff->show("Read TIFF Image");
+
     auto *img = new Image("test.bmp");
     auto *new_img = new Image(img);
     img->show("Read Image");

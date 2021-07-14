@@ -51,25 +51,61 @@ RGBdata Image::getPixelFloat(double row, double col) {
 
 Image::Image(const std::string &path) {
     auto *reader = new ByteReader(path);
-    assert(reader->getBytes(0, 2) == "BM");
 
-    unsigned int offset = reader->getUIntLittleEndian(10);
-    width = reader->getIntLittleEndian(18);
-    height = reader->getIntLittleEndian(22);
+    if (reader->getBytes(0, 2) == "BM") {
+        // BMP
+        unsigned int offset = reader->getUIntLittleEndian(10);
+        width = reader->getIntLittleEndian(18);
+        height = reader->getIntLittleEndian(22);
 
-    data = new RGBdata *[height];
-    unsigned int pos = offset;
-    unsigned int rowBytesCount = (24 * width + 31) / 32 * 4;
+        data = new RGBdata *[height];
+        unsigned int pos = offset;
+        unsigned int rowBytesCount = (24 * width + 31) / 32 * 4;
 
-    for (int i = height - 1; i >= 0; --i) {
-        data[i] = new RGBdata[width];
-        for (int j = 0; j < width; ++j) {
-            uint8_t b = reader->getByte(pos++);
-            uint8_t g = reader->getByte(pos++);
-            uint8_t r = reader->getByte(pos++);
-            data[i][j] = RGBdata(r, g, b);
+        for (int i = height - 1; i >= 0; --i) {
+            data[i] = new RGBdata[width];
+            for (int j = 0; j < width; ++j) {
+                uint8_t b = reader->getByte(pos++);
+                uint8_t g = reader->getByte(pos++);
+                uint8_t r = reader->getByte(pos++);
+                data[i][j] = RGBdata(r, g, b);
+            }
+            pos += (rowBytesCount - 3 * width); // skip padding
         }
-        pos += (rowBytesCount - 3 * width); // skip padding
+    } else if (reader->getUShortBigEndian(2) == 42) {
+        // TIFF
+        unsigned int ifdOffset = reader->getUIntBigEndian(4);
+        unsigned int entryCount = reader->getUShortBigEndian(ifdOffset);
+        for (unsigned int e = 0; e < entryCount; ++e) {
+            unsigned int entryOffset = ifdOffset + 2 + 12 * e;
+            uint16_t tag = reader->getUShortBigEndian(entryOffset);
+            uint16_t type = reader->getUShortBigEndian(entryOffset + 2);
+            if (tag == 0x0100) {
+                // ImageWidth
+                width = reader->getUShortBigEndian(entryOffset + 8);
+            } else if (tag == 0x0101) {
+                // ImageLength
+                height = reader->getUShortBigEndian(entryOffset + 8);
+            } else if (tag == 0x0111) {
+                // StripOffsets (Pixel Data)
+                uint32_t length = reader->getUIntBigEndian(entryOffset + 4);
+                uint32_t valueOffset = reader->getUIntBigEndian(entryOffset + 8);
+
+                data = new RGBdata *[height];
+                unsigned int pos = valueOffset;
+                for (int i = 0; i < height; ++i) {
+                    data[i] = new RGBdata[width];
+                    for (int j = 0; j < width; ++j) {
+                        uint8_t r = reader->getByte(pos++);
+                        uint8_t g = reader->getByte(pos++);
+                        uint8_t b = reader->getByte(pos++);
+                        data[i][j] = RGBdata(r, g, b);
+                    }
+                }
+            }
+        }
+    } else {
+        assert(false);
     }
     delete reader;
 

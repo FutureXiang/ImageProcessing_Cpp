@@ -19,11 +19,15 @@ public:
 
     uint8_t getByte(unsigned int pos);
 
-    std::string getBytes(int begin, int end);
+    std::string getBytes(unsigned int begin, unsigned int end);
 
-    int getIntLittleEndian(int begin);
+    int getIntLittleEndian(unsigned int begin);
 
-    unsigned int getUIntLittleEndian(int begin);
+    unsigned int getUIntLittleEndian(unsigned int begin);
+
+    unsigned int getUIntBigEndian(unsigned int begin);
+
+    uint16_t getUShortBigEndian(unsigned int begin);
 };
 
 #endif //IMAGE_BYTEREADER_H
