@@ -19,6 +19,13 @@ extern char **argv_main;
 
 double linearInterpolation(double A, double B, double ratio_Ax_AB);
 
+enum FILTER_TYPE {
+    ROBERTS,
+    SOBEL,
+    PREWITT,
+    LAPLACIAN,
+};
+
 class Image {
 private:
     RGBdata getPixel(int row, int col);
@@ -52,6 +59,10 @@ public:
     void equalizeHist();
 
     void showFourier();
+
+    void showEdgeDetection(FILTER_TYPE type);
 };
+
+void visualizeResponse(uint8_t **response, int h, int w, const char *title);
 
 #endif //IMAGE_IMAGE_H

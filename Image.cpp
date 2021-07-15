@@ -346,3 +346,90 @@ void Image::showFourier() {
     show("Inverse Fourier");
     genBGR();
 }
+
+void Image::showEdgeDetection(FILTER_TYPE type) {
+    if (type == ROBERTS) {
+        auto result = new uint8_t *[height];
+        for (int i = 0; i < height; ++i) {
+            result[i] = new uint8_t[width];
+            for (int j = 0; j < width; ++j) {
+                if (i == height - 1 || j == width - 1) {
+                    result[i][j] = 0;
+                } else {
+                    result[i][j] = abs((int) data[i][j].gray() - (int) data[i + 1][j + 1].gray()) +
+                                   abs((int) data[i + 1][j].gray() - (int) data[i][j + 1].gray());
+                }
+            }
+        }
+        visualizeResponse(result, height, width, "roberts");
+    } else if (type == SOBEL) {
+        auto result = new uint8_t *[height];
+        for (int i = 0; i < height; ++i) {
+            result[i] = new uint8_t[width];
+            for (int j = 0; j < width; ++j) {
+                if (i == height - 1 || j == width - 1 || i == 0 || j == 0) {
+                    result[i][j] = 0;
+                } else {
+                    int s1 = ((int) data[i + 1][j - 1].gray() - (int) data[i - 1][j - 1].gray())
+                             + ((int) data[i + 1][j + 1].gray() - (int) data[i - 1][j + 1].gray())
+                             + ((int) data[i + 1][j].gray() - (int) data[i - 1][j].gray()) * 2;
+                    int s2 = ((int) data[i - 1][j + 1].gray() - (int) data[i - 1][j - 1].gray())
+                             + ((int) data[i + 1][j + 1].gray() - (int) data[i + 1][j - 1].gray())
+                             + ((int) data[i][j + 1].gray() - (int) data[i][j - 1].gray()) * 2;
+                    result[i][j] = (abs(s1) + abs(s2)) / 2;
+                }
+            }
+        }
+        visualizeResponse(result, height, width, "sobel");
+    } else if (type == PREWITT) {
+        auto result = new uint8_t *[height];
+        for (int i = 0; i < height; ++i) {
+            result[i] = new uint8_t[width];
+            for (int j = 0; j < width; ++j) {
+                if (i == height - 1 || j == width - 1 || i == 0 || j == 0) {
+                    result[i][j] = 0;
+                } else {
+                    int s1 = ((int) data[i + 1][j - 1].gray() - (int) data[i - 1][j - 1].gray())
+                             + ((int) data[i + 1][j + 1].gray() - (int) data[i - 1][j + 1].gray())
+                             + ((int) data[i + 1][j].gray() - (int) data[i - 1][j].gray());
+                    int s2 = ((int) data[i - 1][j + 1].gray() - (int) data[i - 1][j - 1].gray())
+                             + ((int) data[i + 1][j + 1].gray() - (int) data[i + 1][j - 1].gray())
+                             + ((int) data[i][j + 1].gray() - (int) data[i][j - 1].gray());
+                    result[i][j] = (abs(s1) + abs(s2)) / 2;
+                }
+            }
+        }
+        visualizeResponse(result, height, width, "prewitt");
+    } else if (type == LAPLACIAN) {
+        auto result = new uint8_t *[height];
+        for (int i = 0; i < height; ++i) {
+            result[i] = new uint8_t[width];
+            for (int j = 0; j < width; ++j) {
+                if (i == height - 1 || j == width - 1 || i == 0 || j == 0) {
+                    result[i][j] = 0;
+                } else {
+                    result[i][j] = abs(4 * (int) data[i][j].gray()
+                                       - (int) data[i + 1][j].gray()
+                                       - (int) data[i][j + 1].gray()
+                                       - (int) data[i][j - 1].gray()
+                                       - (int) data[i - 1][j].gray());
+                }
+            }
+        }
+        visualizeResponse(result, height, width, "laplacian");
+    } else {
+        assert(false);
+    }
+}
+
+void visualizeResponse(uint8_t **response, int h, int w, const char *title) {
+    auto *img = new Image(h, w);
+    for (int i = 0; i < h; ++i) {
+        for (int j = 0; j < w; ++j) {
+            img->data[i][j] = {response[i][j], response[i][j], response[i][j]};
+        }
+    }
+    img->genBGR();
+    img->show(title);
+    delete img;
+}

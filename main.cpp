@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
 
     auto *img = new Image("test.bmp");
     auto *new_img = new Image(img);
-    img->show("Read Image");
+    img->show("Read BMP Image");
     img->showFourier();
     img->equalizeHist();
     img->show("Histogram Equalization");
@@ -27,13 +27,13 @@ int main(int argc, char **argv) {
     bin_1->translation(-40, -40);
     auto *bin_2 = new Image("test_fft_big.bmp");
     auto *bin_3 = new Image("test_fft_small.bmp");
-    bin->show("original");
+    bin->show("MEDIUM SIZE");
     bin->showFourier();
-    bin_1->show("translation");
+    bin_1->show("MEDIUM translation");
     bin_1->showFourier();
-    bin_2->show("zoom in");
+    bin_2->show("BIG SIZE");
     bin_2->showFourier();
-    bin_3->show("zoom out");
+    bin_3->show("SMALL SIZE");
     bin_3->showFourier();
 
     auto edge = getEdgePoints();
@@ -42,5 +42,10 @@ int main(int argc, char **argv) {
     plotPoints(getIFourierRecon(descriptor, 2), "M = 2");
     plotPoints(getIFourierRecon(descriptor, 32), "M = 32");
     plotPoints(getIFourierRecon(descriptor, 62), "M = 62");
+
+    tiff->showEdgeDetection(ROBERTS);
+    tiff->showEdgeDetection(SOBEL);
+    tiff->showEdgeDetection(PREWITT);
+    tiff->showEdgeDetection(LAPLACIAN);
     return 0;
 }
